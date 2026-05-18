@@ -63,7 +63,7 @@
 ### Web 用户流程（与线上一致）
 
 ```text
-/login 或 /login?next=/app/...
+/login 或 /login?next=/app/... 或 /login?intent=agent&next=/app/account/connect
   ├─ 账号密码（默认）
   │    账号：11 位手机号 或 用户名 /^[a-zA-Z0-9_-]{3,50}$/
   │    密码：8～16 位
@@ -75,12 +75,15 @@
        POST /api/auth/register?grant_tokens=true（优先）→ 直接带 token 或再 password login
 ```
 
-已登录用户访问 `/login`：`session===user` 时自动 `replace` 到 `next` 或 `/app/analyze`。
+**Agent / Cursor 长期 JWT（方案 B，无 PAT 表）**
 
-会话持久化：Zustand `persist` 键 `zhputian-auth`（`accessToken`、`refreshToken`、`user`）。  
-`authenticatedFetch`：401 时用 `refresh_token` 调 `POST /api/auth/refresh`，失败则清空会话并抛「登录已过期，请重新登录」（对用户改为 SKILL 友好文案）。
+1. 用户已登录 Web（短期 `access_token` 在 Zustand）。  
+2. 打开 `https://www.turingfin.com/app/account/connect`（未登录会被重定向到 `/login?intent=agent&next=...`）。  
+3. 页面调用 `POST https://api.turingfin.com/api/auth/connect-token`，请求头 `Authorization: Bearer <当前会话 access_token>`。  
+4. 响应：`access_token`（长期 JWT，`purpose: agent`，过期天数见服务端 `AGENT_CONNECT_TOKEN_EXPIRE_DAYS`，默认 3650）、`authorization`（整行 `Bearer <jwt>`，供用户复制）。  
+5. 用户将 `authorization` 的值写入宿主环境变量 **`TURINGFIN_AUTHORIZATION`**（整行，含 `Bearer ` 前缀）。Agent 代调 API 时请求头使用同一值。
 
-**无短信登录 API**；登录页重置密码对话框存在，短信为本地/mock 流程，不以短信接口为准。
+JWT 仍走 `get_current_user` / `verify_token`；登出时仅 blacklist 当前 Web 会话的 access/refresh，**不会**自动吊销已复制的长期 JWT，除非另行扩展黑名单逻辑。
 
 ### 接口
 
@@ -90,12 +93,22 @@
 | 注册 | `POST https://api.turingfin.com/api/auth/register`（`username`,`email`,`password`,`phone?`；`grant_tokens=true` 时直接返回 token） |
 | 微信二维码 | `GET https://api.turingfin.com/api/auth/wechat/qrcode` |
 | 微信换 token | `POST https://api.turingfin.com/api/auth/wechat/login?code=` |
+| **Agent 连接 JWT** | `POST https://api.turingfin.com/api/auth/connect-token`，Bearer 为**当前 Web 会话**的 access_token |
 | 刷新 token | `POST https://api.turingfin.com/api/auth/refresh` body `{ "refresh_token" }` |
 | 当前用户 | `GET https://api.turingfin.com/api/users/me` 或 `/api/auth/me`，Bearer |
 | 退出 | `POST https://api.turingfin.com/api/auth/logout` Bearer + `{ "refresh_token" }` |
 | 全设备退出 | `POST https://api.turingfin.com/api/auth/logout/all` Bearer |
 
 登录成功响应含：`access_token`、`refresh_token`、`token_type`、`user`。
+
+`connect-token` 响应含：`access_token`、`token_type`、`authorization`（无 `refresh_token`）。
+
+已登录用户访问 `/login`：`session===user` 时自动 `replace` 到 `next` 或 `/app/analyze`。
+
+会话持久化：Zustand `persist` 键 `zhputian-auth`（`accessToken`、`refreshToken`、`user`）。  
+`authenticatedFetch`：401 时用 `refresh_token` 调 `POST /api/auth/refresh`，失败则清空会话并抛「登录已过期，请重新登录」（对用户改为 SKILL 友好文案）。
+
+**无短信登录 API**；登录页重置密码对话框存在，短信为本地/mock 流程，不以短信接口为准。
 
 ### 退出（Web）
 
@@ -126,6 +139,7 @@
 | 对话选股 | `https://www.turingfin.com/app/pick` | `POST /api/dialogue/stream`（SSE） |
 | 股票搜索 | 分析/自选搜索框 | `GET /api/stocks/search` |
 | 自选股票 | `https://www.turingfin.com/app/watchlist` | `GET/POST/DELETE /api/stocks/portfolio` |
+| 连接 AI 助手 | `https://www.turingfin.com/app/account/connect` | `POST /api/auth/connect-token`（Bearer 为 Web 会话） |
 | 行情查询 | 分析/自选列表 | `www` BFF `/api/stocks/{code}/quote` |
 
 ```text

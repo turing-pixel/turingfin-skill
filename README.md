@@ -57,6 +57,11 @@
 **如何退出**  
 工作台 → **账号** → **退出登录**，随后回到首页。
 
+**在 Cursor 等工具里连接同一账号（可选）**  
+若希望助手在对话里直接代你访问云端分析、选股等能力：登录官网后打开 **用户中心 → 连接 AI 助手**，按页面生成授权信息，将**整行**内容保存到编辑器环境变量 **`TURINGFIN_AUTHORIZATION`**（变量名以页面为准）。勿将授权内容粘贴到对话或聊天中；配置完成后重启或新建对话即可。
+
+也可先打开 [连接助手登录入口](https://www.turingfin.com/login?intent=agent&next=%2Fapp%2Faccount%2Fconnect)（登录成功后会进入「连接 AI 助手」页）。若你不使用对话工具代访问，可忽略本节。
+
 登录状态在同一浏览器中通常会保持；换设备或长时间未用后，需重新登录。
 
 ---
@@ -124,7 +129,6 @@ npx skills add turing-pixel/turingfin-skill -g -y
 | **Gemini**（Google AI Studio / Gemini CLI） | 安装后打开 Gemini 对话或 CLI；在支持 Skills 的配置里启用 `turingfin`，用自然语言描述分析或选股需求。 |
 | **GitHub Copilot** | 在 VS Code、JetBrains 或 Copilot 对话环境中，确认已安装并启用 Skills 后，在 Copilot Chat 里提出 TuringFin 相关需求。 |
 | **Codex**（OpenAI Codex CLI） | 安装技能后启动 Codex，新建会话；确认 `turingfin` 已加载，再说明股票代码与分析意图。 |
-| **Cursor** | 安装后重启 Cursor，在 Agent 对话中直接说「分析某某股票」等；匹配时会自动加载 TuringFin。 |
 | **Windsurf** | 安装技能并重启 Windsurf，在 Cascade / 对话面板新建会话，说出研究或选股需求。 |
 | **Cline**（VS Code 插件） | 在 VS Code 安装 Cline 并启用 Skills 后，新建任务，用中文说明要做的分析或自选操作。 |
 | **Continue** | 在 Continue 侧边栏新建对话，确认技能目录含 `turingfin` 后，描述你的投研需求。 |
@@ -158,7 +162,7 @@ npx skills add turing-pixel/turingfin-skill -g -y
 各产品界面与菜单会随版本更新；以各平台最新 Skills 说明为准，或联系为你提供安装命令的服务方。
 
 **登录说明**  
-使用云端分析、选股、搜索或自选同步前，请先在 [官网](https://www.turingfin.com) 登录页完成登录（账号密码或微信扫码）。在 AI 助手里操作同类功能时，也需使用**同一账号**在官网已登录；助手会提示你登录，不会要求你提供密码或任何技术参数。
+使用云端分析、选股、搜索或自选同步前，请先在 [官网](https://www.turingfin.com) 登录页完成登录（账号密码或微信扫码）。在 AI 助手里操作同类功能时，需使用**同一账号**；若该工具支持读取环境变量，可在官网 **用户中心 → 连接 AI 助手** 按页面配置 **`TURINGFIN_AUTHORIZATION`**，便于助手代调云端接口。助手不会要求你提供密码，也不会让你在对话里粘贴授权内容。
 
 ---
 
@@ -196,7 +200,7 @@ npx skills add turing-pixel/turingfin-skill -g -y
 **对话选股没有回复？**  
 检查网络后重试；也可刷新「对话选股」页面继续。
 
-**在 ChatGPT、Claude、Cursor、DeepSeek、Kimi 等工具里没有反应？**  
+**在 DeepSeek、Kimi、通义千问 等工具里没有反应？**  
 确认已执行安装命令并**完全重启**该应用；在「技能 / Skills」里查看 `turingfin` 是否已启用。部分平台需较新版本才支持 Skills。仍无效时，可先在 [官网](https://www.turingfin.com) 完成同样操作，或联系提供安装说明的服务方。
 
 ---
